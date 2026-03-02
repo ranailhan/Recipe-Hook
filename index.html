@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Hook</title>
+    <meta name="description" content="Recipe Hook — minimalist recipe search UI." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./dist/styles.css" />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        background: #f9f9f9;
+      }
+    </style>
+  </head>
+
+  <body class="text-zinc-900">
+    <div class="min-h-dvh">
+      <!-- toast host -->
+      <div
+        id="toastHost"
+        class="pointer-events-none fixed right-4 top-4 z-50 flex w-[min(420px,calc(100vw-2rem))] flex-col gap-3"
+        aria-live="polite"
+        aria-relevant="additions"
+      ></div>
+
+      <!-- ambient background -->
+      <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10">
+        <div class="absolute left-1/2 top-[-260px] h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-zinc-900/[0.04] blur-3xl"></div>
+        <div class="absolute bottom-[-280px] left-1/2 h-[560px] w-[860px] -translate-x-1/2 rounded-full bg-zinc-900/[0.03] blur-3xl"></div>
+      </div>
+
+      <!-- header -->
+      <header class="sticky top-0 z-20">
+        <div class="mx-auto max-w-6xl px-5 pt-6">
+          <div
+            class="rounded-3xl border border-white/60 bg-white/55 shadow-[0_12px_30px_-18px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+          >
+            <div class="px-6 py-6 sm:px-10 sm:py-8">
+              <div class="flex flex-col items-center text-center">
+                <div class="inline-flex items-center gap-2.5">
+                  <div
+                    class="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white shadow-sm"
+                    aria-hidden="true"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M6 19c1.8-2.2 4.2-3.3 6-3.3S16.2 16.8 18 19"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M7.2 8.8c2.4-2.7 6.9-2.7 9.3 0"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M8.7 11.2c1.6-1.7 4.7-1.7 6.3 0"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M12 13.2h0"
+                        stroke="currentColor"
+                        stroke-width="3.2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+                  <p class="text-sm font-medium tracking-tight text-zinc-700">Recipe Hook</p>
+                </div>
+
+                <h1 class="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Find your next favorite meal
+                </h1>
+                <p class="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-zinc-600 sm:text-[15px]">
+                  A clean, minimalist recipe search experience — image-first results with calm
+                  typography.
+                </p>
+
+                <!-- search -->
+                <div class="mt-6 w-full max-w-2xl">
+                  <form id="searchForm" class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                    <div
+                      id="searchShell"
+                      class="group flex flex-1 items-center gap-3 rounded-2xl border border-white/60 bg-white/60 px-4 py-3 shadow-[0_10px_25px_-18px_rgba(0,0,0,0.35)] backdrop-blur-md transition focus-within:border-zinc-900/20 focus-within:bg-white/75"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5 text-zinc-500 transition group-focus-within:text-zinc-700"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                          stroke="currentColor"
+                          stroke-width="1.7"
+                        />
+                        <path
+                          d="M16.2 16.2 21 21"
+                          stroke="currentColor"
+                          stroke-width="1.7"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <label class="sr-only" for="search">Ingredients</label>
+                      <input
+                        id="search"
+                        name="ingredients"
+                        type="search"
+                        placeholder="Ingredients (comma-separated)… e.g., chicken, garlic, lemon"
+                        class="w-full bg-transparent text-[15px] text-zinc-900 placeholder:text-zinc-500 focus:outline-none"
+                        autocomplete="off"
+                        inputmode="search"
+                      />
+                      <span
+                        class="hidden select-none rounded-xl border border-zinc-900/10 bg-white/70 px-2.5 py-1 text-xs font-medium text-zinc-600 shadow-sm sm:inline"
+                        >Comma</span
+                      >
+                    </div>
+
+                    <button
+                      id="findBtn"
+                      type="submit"
+                      class="inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold tracking-tight text-white shadow-[0_10px_25px_-18px_rgba(0,0,0,0.55)] transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <svg
+                        id="btnSpinner"
+                        class="hidden h-4 w-4 animate-spin text-white/90"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M21 12a9 9 0 1 1-9-9"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Find Recipes</span>
+                    </button>
+                  </form>
+
+                  <p class="mt-3 text-xs leading-relaxed text-zinc-600">
+                    Tip: keep it simple — 2–5 ingredients tends to work best.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- content -->
+      <main class="mx-auto max-w-6xl px-5 pb-14 pt-10">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <h2 id="resultsTitle" class="text-sm font-semibold tracking-tight text-zinc-900">
+              Trending recipes
+            </h2>
+            <p id="resultsSubtitle" class="mt-1 text-sm text-zinc-600">
+              Try a search above — results will appear here.
+            </p>
+          </div>
+          <div class="hidden items-center gap-2 sm:flex">
+            <span class="text-xs font-medium text-zinc-600">Grid</span>
+            <span class="h-1.5 w-1.5 rounded-full bg-zinc-300" aria-hidden="true"></span>
+            <span class="text-xs font-medium text-zinc-600">Image-first</span>
+          </div>
+        </div>
+
+        <!-- results grid -->
+        <section
+          id="resultsGrid"
+          class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          aria-busy="false"
+        >
+          <!-- card 1 -->
+          <article
+            class="group overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_-28px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-30px_rgba(0,0,0,0.55)]"
+          >
+            <div class="relative aspect-square">
+              <img
+                class="absolute inset-0 h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+                src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1400&h=1400&q=80"
+                alt="A bright salad bowl"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+              <div
+                class="absolute inset-0 bg-black/35 opacity-0 transition-all duration-300 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+
+              <div class="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-zinc-900 shadow-sm backdrop-blur">
+                2 missing items
+              </div>
+
+              <div class="absolute bottom-0 left-0 right-0 p-5">
+                <p class="text-xs font-medium tracking-wide text-white/80">15 min • Fresh</p>
+                <h3 class="mt-1 text-lg font-semibold tracking-tight text-white">
+                  Citrus Avocado Salad
+                </h3>
+                <p class="mt-1 line-clamp-2 text-sm text-white/80">
+                  Bright, crunchy, and clean — a minimalist plate that feels premium.
+                </p>
+              </div>
+
+              <div
+                class="absolute inset-x-0 bottom-0 p-5 opacity-0 transition-all duration-300 group-hover:opacity-100"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-xs font-medium text-white/85 backdrop-blur">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <span>15 min</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-sm transition-all duration-300 hover:bg-white"
+                  >
+                    View Recipe
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                      <path d="M9 7h8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- card 2 -->
+          <article
+            class="group overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_-28px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-30px_rgba(0,0,0,0.55)]"
+          >
+            <div class="relative aspect-square">
+              <img
+                class="absolute inset-0 h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+                src="https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642?auto=format&fit=crop&w=1400&h=1400&q=80"
+                alt="Pasta close-up"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+              <div
+                class="absolute inset-0 bg-black/35 opacity-0 transition-all duration-300 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+
+              <div class="absolute bottom-0 left-0 right-0 p-5">
+                <p class="text-xs font-medium tracking-wide text-white/80">25 min • Cozy</p>
+                <h3 class="mt-1 text-lg font-semibold tracking-tight text-white">
+                  Creamy Lemon Pasta
+                </h3>
+                <p class="mt-1 line-clamp-2 text-sm text-white/80">
+                  Silky sauce, sharp citrus, and a simple finish of pepper + parmesan.
+                </p>
+              </div>
+
+              <div
+                class="absolute inset-x-0 bottom-0 p-5 opacity-0 transition-all duration-300 group-hover:opacity-100"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-xs font-medium text-white/85 backdrop-blur">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <span>25 min</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-sm transition-all duration-300 hover:bg-white"
+                  >
+                    View Recipe
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                      <path d="M9 7h8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- card 3 -->
+          <article
+            class="group overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_-28px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-30px_rgba(0,0,0,0.55)]"
+          >
+            <div class="relative aspect-square">
+              <img
+                class="absolute inset-0 h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+                src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1400&h=1400&q=80"
+                alt="Pizza slice close-up"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+              <div
+                class="absolute inset-0 bg-black/35 opacity-0 transition-all duration-300 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+
+              <div class="absolute bottom-0 left-0 right-0 p-5">
+                <p class="text-xs font-medium tracking-wide text-white/80">40 min • Shareable</p>
+                <h3 class="mt-1 text-lg font-semibold tracking-tight text-white">
+                  Charred Tomato Flatbread
+                </h3>
+                <p class="mt-1 line-clamp-2 text-sm text-white/80">
+                  Crispy edges, soft center, and a clean basil-forward aroma.
+                </p>
+              </div>
+
+              <div
+                class="absolute inset-x-0 bottom-0 p-5 opacity-0 transition-all duration-300 group-hover:opacity-100"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-xs font-medium text-white/85 backdrop-blur">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <span>40 min</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-sm transition-all duration-300 hover:bg-white"
+                  >
+                    View Recipe
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                      <path d="M9 7h8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <div
+          id="resultsMessage"
+          class="mt-7 hidden rounded-3xl border border-white/70 bg-white/70 p-6 text-center shadow-[0_18px_45px_-30px_rgba(0,0,0,0.35)] backdrop-blur"
+          role="status"
+        >
+          <p class="text-sm font-semibold tracking-tight text-zinc-900">No recipes found</p>
+          <p class="mt-1 text-sm text-zinc-600">
+            Try fewer ingredients, or remove very specific items.
+          </p>
+        </div>
+      </main>
+
+      <footer class="pb-10">
+        <div class="mx-auto max-w-6xl px-5">
+          <div class="flex flex-col items-center justify-between gap-3 border-t border-zinc-900/10 pt-8 text-center sm:flex-row sm:text-left">
+            <p class="text-sm text-zinc-600">
+              © <span class="font-medium text-zinc-800">Recipe Hook</span> — static UI.
+            </p>
+            <p class="text-sm text-zinc-500">Powered by Spoonacular.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- templates (keeps Tailwind classes discoverable at build time) -->
+    <template id="recipeCardTemplate">
+      <article
+        class="group overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_-28px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_-30px_rgba(0,0,0,0.55)]"
+      >
+        <div class="relative aspect-square">
+          <img
+            data-img
+            class="absolute inset-0 h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+            src=""
+            alt=""
+            loading="lazy"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+          <div
+            class="absolute inset-0 bg-black/35 opacity-0 transition-all duration-300 group-hover:opacity-100"
+            aria-hidden="true"
+          ></div>
+
+          <div
+            data-badge
+            class="hidden absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-zinc-900 shadow-sm backdrop-blur"
+          >
+            2 missing items
+          </div>
+
+          <div class="absolute bottom-0 left-0 right-0 p-5">
+            <p data-meta class="text-xs font-medium tracking-wide text-white/80">Missed ingredients</p>
+            <h3 data-title class="mt-1 text-lg font-semibold tracking-tight text-white">Recipe title</h3>
+            <p data-sub class="mt-1 text-sm text-white/80">Minimal, image-first card.</p>
+          </div>
+
+          <div
+            class="absolute inset-x-0 bottom-0 p-5 opacity-0 transition-all duration-300 group-hover:opacity-100"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-xs font-medium text-white/85 backdrop-blur">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <span data-time>— min</span>
+              </div>
+
+              <a
+                data-view
+                href="#"
+                target="_blank"
+                rel="noreferrer"
+                class="inline-flex items-center gap-2 rounded-2xl bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-sm transition-all duration-300 hover:bg-white"
+              >
+                View Recipe
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M7 17 17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                  <path d="M9 7h8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <template id="skeletonCardTemplate">
+      <article
+        class="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_-28px_rgba(0,0,0,0.35)]"
+      >
+        <div class="relative aspect-square animate-pulse">
+          <div class="absolute inset-0 bg-zinc-900/5"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-zinc-900/15 via-transparent to-transparent"></div>
+
+          <div class="absolute bottom-0 left-0 right-0 p-5">
+            <div class="h-3 w-28 rounded-full bg-white/70"></div>
+            <div class="mt-2 h-5 w-3/4 rounded-full bg-white/70"></div>
+            <div class="mt-2 h-4 w-2/3 rounded-full bg-white/60"></div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
